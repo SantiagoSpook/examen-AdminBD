@@ -75,6 +75,26 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
+// get producto por id
+app.get("/api/products/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.query("SELECT * FROM products WHERE id = ?", [
+      id,
+    ]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("Error obteniendo producto por ID:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
