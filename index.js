@@ -21,6 +21,17 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
+// get productos
+app.get("/api/products", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM products");
+    res.json(rows);
+  } catch (err) {
+    console.error("Error ejecutando query", err);
+    res.status(500).json({ error: "Error al obtener productos" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
