@@ -144,6 +144,29 @@ app.put("/api/products/:id", async (req, res) => {
   }
 });
 
+// deletye producto por id
+app.delete("/api/products/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [result] = await pool.query("DELETE FROM products WHERE id = ?", [
+      id,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    res.json({
+      message: "Producto eliminado correctamente",
+      id: id,
+    });
+  } catch (err) {
+    console.error("Error eliminando producto:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
