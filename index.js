@@ -95,6 +95,55 @@ app.get("/api/products/:id", async (req, res) => {
   }
 });
 
+// put producto por id
+app.put("/api/products/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, description, price, stock, image } = req.body;
+
+  // validación
+  if (!name || !description || !price || !stock) {
+    return res.status(400).json({
+      error: "Los campos name, description, price y stock son obligatorios",
+    });
+  }
+
+  const query = `
+        UPDATE products 
+        SET name = ?, description = ?, price = ?, stock = ?, image = ?
+        WHERE id = ?
+    `;
+
+  try {
+    const [result] = await pool.query(query, [
+      name,
+      description,
+      price,
+      stock,
+      image || null,
+      id,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    res.json({
+      message: "Producto actualizado correctamente",
+      producto: {
+        id,
+        name,
+        description,
+        price,
+        stock,
+        image,
+      },
+    });
+  } catch (err) {
+    console.error("Error actualizando producto:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
