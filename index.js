@@ -300,6 +300,34 @@ app.post("/api/purchases", async (req, res) => {
   }
 });
 
+//get compras (general)
+app.get("/api/purchases", async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+            SELECT 
+                p.id AS purchase_id,
+                p.user_id,
+                p.total,
+                p.status,
+                p.purchase_date,
+                d.id AS detail_id,
+                d.product_id,
+                d.quantity,
+                d.price,
+                d.subtotal
+            FROM purchases p
+            LEFT JOIN purchase_details d 
+                ON p.id = d.purchase_id
+            ORDER BY p.id DESC;
+        `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error obteniendo compras:", error);
+    res.status(500).json({ error: "Error interno del servidor." });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
