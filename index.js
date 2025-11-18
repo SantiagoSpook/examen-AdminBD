@@ -169,7 +169,7 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
-// operaciones CRUD del exaamen
+// operaciones CRUD del exaamen ==================== :3
 
 //post
 app.post("/api/purchases", async (req, res) => {
@@ -363,6 +363,49 @@ app.get("/api/purchases/:id", async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error("Error obteniendo compra por ID:", error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+    });
+  }
+});
+
+// delete compras por id
+app.delete("/api/purchases/:id", async (req, res) => {
+  const { id } = req.params;
+  // verificaciones
+  try {
+    const [purchaseRows] = await pool.query(
+      "SELECT status FROM purchases WHERE id = ?",
+      [id]
+    );
+
+    if (purchaseRows.length === 0) {
+      return res.status(404).json({
+        error: "Compra no encontrada",
+      });
+    }
+
+    const status = purchaseRows[0].status;
+
+    //validacion completed
+    if (status === "COMPLETED") {
+      return res.status(400).json({
+        error: "No se puede eliminar una compra con status COMPLETED",
+      });
+    }
+
+    await pool.query("DELETE FROM purchase_details WHERE purchase_id = ?", [
+      id,
+    ]);
+
+    await pool.query("DELETE FROM purchases WHERE id = ?", [id]);
+
+    res.json({
+      message: "Compra eliminada exitosamente",
+      purchase_id: id,
+    });
+  } catch (error) {
+    console.error("Error eliminando compra:", error);
     res.status(500).json({
       error: "Error interno del servidor",
     });
