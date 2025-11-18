@@ -328,6 +328,47 @@ app.get("/api/purchases", async (req, res) => {
   }
 });
 
+// get compra por id
+app.get("/api/purchases/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.query(
+      `
+            SELECT 
+                p.id AS purchase_id,
+                p.user_id,
+                p.total,
+                p.status,
+                p.purchase_date,
+                d.id AS detail_id,
+                d.product_id,
+                d.quantity,
+                d.price,
+                d.subtotal
+            FROM purchases p
+            LEFT JOIN purchase_details d 
+                ON p.id = d.purchase_id
+            WHERE p.id = ?;
+        `,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        error: "Compra no encontrada",
+      });
+    }
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error obteniendo compra por ID:", error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
 });
